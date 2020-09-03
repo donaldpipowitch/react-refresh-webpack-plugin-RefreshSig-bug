@@ -10,22 +10,22 @@ module.exports = (env) => {
   const watch = dev;
   if (!dev) process.env.NODE_ENV = 'production';
 
-  const babelConfig = require('./babel.config');
-
   const rules = [
     {
       test: /\.tsx?$/,
       exclude: /node_modules/,
       loader: 'babel-loader',
-      // options: {plugins:env.FAST_REFRESH
-      //   ? [require.resolve('react-refresh/babel')]
-      //   : []}
       options: {
-        ...babelConfig,
         plugins: env.FAST_REFRESH
-          ? [...babelConfig.plugins, require.resolve('react-refresh/babel')]
-          : babelConfig.plugins,
+          ? [require.resolve('react-refresh/babel')]
+          : [],
       },
+      // options: {
+      //   ...babelConfig,
+      //   plugins: env.FAST_REFRESH
+      //     ? [...babelConfig.plugins, require.resolve('react-refresh/babel')]
+      //     : babelConfig.plugins,
+      // },
     },
   ];
 
