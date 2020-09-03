@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "wp --config src/webpack.config.js --dev"
+    "start": "webpack --env.FAST_REFRESH --config src/webpack.config.js --dev"
   },
   "dependencies": {
     "@types/react": "^16.9.43",
@@ -27,6 +27,7 @@
     "react-refresh": "^0.8.3",
     "typescript": "^3.9.7",
     "webpack": "^4.44.0",
+    "webpack-cli": "^3.3.12",
     "webpack-nano": "^1.0.0",
     "webpack-plugin-serve": "^1.0.1"
   }
