@@ -1,7 +1,10 @@
 const { join } = require('path');
 const ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
+const {
+  MiniHtmlWebpackPlugin,
+  generateJSReferences,
+} = require('mini-html-webpack-plugin');
 const { dev } = require('webpack-nano/argv');
 const { WebpackPluginServe } = require('webpack-plugin-serve');
 
@@ -21,8 +24,11 @@ const rules = [
   },
 ];
 
-const entry = ['./src/index.tsx'];
-if (dev) entry.push('webpack-plugin-serve/client');
+const entry = {
+  app: ['./src/index.tsx'],
+  initial: ['./src/components/loading-page.tsx'],
+};
+if (dev) entry.app.push('webpack-plugin-serve/client');
 
 const output = {
   path: join(process.cwd(), 'dist'),
@@ -35,7 +41,14 @@ if (dev) {
 }
 
 const plugins = [
-  new HtmlWebpackPlugin({ template: 'src/index.html' }),
+  new MiniHtmlWebpackPlugin({
+    chunks: ['app'],
+    template({ jsAttributes }) {
+      // jsAttributes === undefined
+      console.log(jsAttributes)
+      return ``;
+    },
+  }),
   new CleanWebpackPlugin({
     // doesn't play nice with webpack-plugin-serve
     cleanStaleWebpackAssets: false,
