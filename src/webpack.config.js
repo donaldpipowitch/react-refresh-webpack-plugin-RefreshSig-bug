@@ -1,15 +1,19 @@
+const webpack = require("webpack");
 const { join } = require('path');
 const ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const { MiniHtmlWebpackPlugin } = require('mini-html-webpack-plugin');
-const { dev } = require('webpack-nano/argv');
+// const { dev } = require('webpack-nano/argv');
 const { WebpackPluginServe } = require('webpack-plugin-serve');
 const React = require('react');
 const { renderToString } = require('react-dom/server');
 
+let webpackInstance;
+
+const dev = process.env.NODE_ENV !== 'production'
 const mode = dev ? 'development' : 'production';
 const watch = dev;
-if (!dev) process.env.NODE_ENV = 'production';
+// if (!dev) process.env.NODE_ENV = 'production';
 
 const babelConfig = require('./babel.config');
 if (dev) babelConfig.plugins.push(require.resolve('react-refresh/babel'));
@@ -45,8 +49,12 @@ const plugins = [
     chunks: ['app', 'initial'],
     template(data) {
       const initialEntry = data.js.pop();
-      // not on file system yet - how do I get it?
-      const { LoadingPage } = require(`${output.path}/${initialEntry}`);  
+      
+      // not compiled...?
+      const initial = webpackInstance.compiler.inputFileSystem._readFileSync('./src/components/loading-page.tsx', 'utf-8');
+      // can I eval a module?! never did that :D
+      const { LoadingPage } = eval(initial);
+
       const renderedLoadingPage = renderToString(
         React.createElement(LoadingPage)
       );
@@ -117,7 +125,7 @@ const stats = {
 
 const devtool = dev ? 'cheap-module-eval-source-map' : 'source-map';
 
-module.exports = {
+const config = {
   mode,
   watch,
   entry,
@@ -128,3 +136,15 @@ module.exports = {
   stats,
   devtool,
 };
+
+webpackInstance = webpack(config, (err, stats) => {
+  if (err) {
+    return console.error(err);
+  }
+
+  if (stats.hasErrors()) {
+    return console.error(stats.toString("errors-only"));
+  }
+
+  console.log(stats);
+});
