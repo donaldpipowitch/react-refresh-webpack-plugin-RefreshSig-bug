@@ -1,12 +1,11 @@
 const { join } = require('path');
 const ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
-const {
-  MiniHtmlWebpackPlugin,
-  generateJSReferences,
-} = require('mini-html-webpack-plugin');
+const { MiniHtmlWebpackPlugin } = require('mini-html-webpack-plugin');
 const { dev } = require('webpack-nano/argv');
 const { WebpackPluginServe } = require('webpack-plugin-serve');
+const React = require('react');
+const { renderToString } = require('react-dom/server');
 
 const mode = dev ? 'development' : 'production';
 const watch = dev;
@@ -34,6 +33,7 @@ const output = {
   path: join(process.cwd(), 'dist'),
   filename: '[name].[chunkhash].js',
   chunkFilename: '[name].[chunkhash].lazy.js',
+  libraryTarget: 'umd', // needed so I can require the initial chunk here?
 };
 if (dev) {
   output.filename = '[name].js';
@@ -42,11 +42,39 @@ if (dev) {
 
 const plugins = [
   new MiniHtmlWebpackPlugin({
-    chunks: ['app'],
-    template({ jsAttributes }) {
-      // jsAttributes === undefined
-      console.log(jsAttributes)
-      return ``;
+    chunks: ['app', 'initial'],
+    template(data) {
+      const initialEntry = data.js.pop();
+      // not on file system yet - how do I get it?
+      const { LoadingPage } = require(`${output.path}/${initialEntry}`);  
+      const renderedLoadingPage = renderToString(
+        React.createElement(LoadingPage)
+      );
+      return `
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+          <meta charset="utf-8" />
+          <title>DEMO</title>
+        </head>
+        <body>
+          <div
+            id="initial"
+            style="
+              position: fixed;
+              top: 0;
+              width: 100vw;
+              background: white;
+              z-index: 1;
+            "
+          >
+            ${renderedLoadingPage}
+          </div>
+          <div id="app"></div>
+          ${data.js.map((entry) => `<script src="${entry}"></script>`)}
+        </body>
+        </html>
+      `;
     },
   }),
   new CleanWebpackPlugin({
