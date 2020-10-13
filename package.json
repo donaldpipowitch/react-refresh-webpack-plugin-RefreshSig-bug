@@ -3,8 +3,8 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "node src/webpack.config.js",
-    "build": "NODE_ENV=production node src/webpack.config.js"
+    "start": "wp --config src/webpack.config.js --dev",
+    "build": "wp --config src/webpack.config.js"
   },
   "dependencies": {
     "@types/react": "^16.9.43",
